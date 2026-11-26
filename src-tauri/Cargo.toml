@@ -1,0 +1,116 @@
+[package]
+name = "LLRemote"
+version = "1.0.0"
+description = "内网远程连接与协助"
+authors = ["iLynnYi"]
+license = "MIT"
+edition = "2021"
+default-run = "LLRemote"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# Keep library artifacts distinct from the application and service binaries.
+name = "LLRemoteLib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "LLRemote"
+path = "src/main.rs"
+
+[[bin]]
+name = "LLRemoteService"
+path = "src/bin/LLRemoteService.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[profile.dev]
+debug = 0
+# Optimized app code hit missing LLVM symbols with Rust 1.96 incremental reuse.
+incremental = false
+
+# Keep pixel loops optimized in Tauri dev without rebuilding every dependency.
+[profile.dev.package.LLRemote]
+opt-level = 2
+
+# Tight/Zlib/ZRLE compression runs in this dependency, outside the app override.
+[profile.dev.package.miniz_oxide]
+opt-level = 2
+
+[profile.test]
+debug = 0
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+semver = "1"
+tungstenite = "0.28"
+uuid = { version = "1", features = ["v4"] }
+rusqlite = { version = "0.41", features = ["bundled"] }
+keyring = { version = "3", features = ["apple-native", "windows-native"] }
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-dialog = "2"
+flate2 = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+base64 = "0.22"
+sha2 = "0.10"
+hex = "0.4"
+chrono = "0.4"
+dotenvy = "0.15"
+zeroize = "1.9"
+# Reuse the locked Tauri runtime dependency for cancellable numeric TCP connects.
+tokio = { version = "1.53.3", features = ["rt", "net", "time"] }
+
+[target.'cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2.5.5"
+
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+
+[target.'cfg(windows)'.dependencies]
+webview2-com = "=0.39.1"
+# Match Tauri's WebView2 interfaces while the Shell picker keeps its own bindings.
+windows-core-webview = { package = "windows-core", version = "=0.62.2" }
+# Reuse the already locked Windows bindings for a single mixed-item Shell picker.
+windows = { version = "=0.61.3", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_Ole", "Win32_System_TaskScheduler", "Win32_System_Variant", "Win32_UI_Shell", "Win32_UI_Shell_Common"] }
+windows-core = "=0.61.2"
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_Graphics_Gdi",
+  "Win32_Graphics_Dwm",
+  "Win32_NetworkManagement_IpHelper",
+  "Win32_NetworkManagement_Ndis",
+  "Win32_NetworkManagement_NetManagement",
+  "Win32_Networking_WinSock",
+  "Win32_Security",
+  "Win32_Security_Authorization",
+  "Win32_Security_Credentials",
+  "Win32_Storage_FileSystem",
+  "Win32_System_Com",
+  "Win32_System_DataExchange",
+  "Win32_System_Environment",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Memory",
+  "Win32_System_Ole",
+  "Win32_System_IO",
+  "Win32_System_JobObjects",
+  "Win32_System_Pipes",
+  "Win32_System_Power",
+  "Win32_System_Registry",
+  "Win32_System_RemoteDesktop",
+  "Win32_System_Services",
+  "Win32_System_SystemServices",
+  "Win32_System_StationsAndDesktops",
+  "Win32_System_Threading",
+  "Win32_UI_HiDpi",
+  "Win32_UI_Controls",
+  "Win32_UI_Shell",
+  "Win32_UI_Input_KeyboardAndMouse",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

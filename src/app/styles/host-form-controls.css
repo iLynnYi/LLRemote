@@ -1,0 +1,34 @@
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 110px minmax(160px, 220px) auto auto minmax(128px, auto) auto auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: #667281;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+label > .n-input,
+label > .n-input-number,
+label > .n-select {
+  width: 100%;
+  --n-height: 36px;
+  --n-border-radius: 7px;
+  --n-color: #f7f8fa;
+}
+
+.toolbar > .n-button,
+.session-toolbar > .n-button,
+.host-editor-actions .n-button,
+.confirm-actions .n-button,
+.event-actions .n-button {
+  --n-height: 36px;
+  --n-padding: 0 14px;
+  font-weight: 700;
+}

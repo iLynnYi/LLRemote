@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+# Always validate resolution settings instead of trusting the repeat-install cache.
+optimisticRepeatInstall: false
+overrides:
+  # GHSA-g3hv-75wg-m249: language-core's minimatch 9 has no patched release.
+  "@vue/language-core>minimatch": "^11.0.1"

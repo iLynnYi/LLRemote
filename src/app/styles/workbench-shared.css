@@ -1,0 +1,64 @@
+.workspace {
+  padding: 22px;
+}
+
+.host-workbench,
+.local-share-header,
+.local-share-server-card,
+.local-share-status-card,
+.local-share-panel,
+.local-share-empty,
+.toolbar,
+.status-grid,
+.screen-frame,
+.event-panel {
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.host-workbench {
+  overflow: hidden;
+}
+
+.session-workbench,
+.local-share-workbench {
+  display: grid;
+  gap: 12px;
+}
+
+.local-share-header {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.session-topbar h2,
+.local-share-header h2 {
+  margin: 0;
+  color: #1f2933;
+  font-size: 18px;
+}
+
+.session-topbar p,
+.local-share-header p {
+  margin: 5px 0 0;
+  color: #667281;
+  font-size: 13px;
+}
+
+.local-share-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.local-share-actions label {
+  width: 96px;
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title"><title id="title">LL Remote — Connected Desktops</title><defs>
+  <linearGradient id="tile" x1="170" y1="92" x2="834" y2="948" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#299B7F"/><stop offset=".52" stop-color="#1B8069"/><stop offset="1" stop-color="#105C4E"/>
+  </linearGradient>
+  <linearGradient id="edge" x1="512" y1="64" x2="512" y2="960" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#FFFFFF" stop-opacity=".26"/><stop offset=".4" stop-color="#FFFFFF" stop-opacity=".03"/><stop offset="1" stop-color="#092F2A" stop-opacity=".2"/>
+  </linearGradient>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%" color-interpolation-filters="sRGB">
+    <feDropShadow dx="0" dy="14" stdDeviation="15" flood-color="#103D32" flood-opacity=".18"/>
+  </filter>
+</defs><rect x="64" y="64" width="896" height="896" rx="202" fill="#196F5C" filter="url(#shadow)"/><rect x="64" y="64" width="896" height="896" rx="202" fill="url(#tile)"/><rect x="66" y="66" width="892" height="892" rx="200" fill="none" stroke="url(#edge)" stroke-width="4"/><g fill="none" stroke-width="62" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M450 389V320a48 48 0 0 1 48-48h244a48 48 0 0 1 48 48v190a48 48 0 0 1-48 48h-70" stroke="#9FE6CE"/>
+    <path d="M574 466H304a48 48 0 0 0-48 48v190a48 48 0 0 0 48 48h244a48 48 0 0 0 48-48v-91" stroke="#F5FFFB"/>
+    <path d="M466 590 594 462" stroke="#F5FFFB"/>
+  </g></svg>

@@ -1,0 +1,13 @@
+{
+  "build": {
+    "beforeBundleCommand": "node scripts/macos-sharing-bundle.mjs"
+  },
+  "bundle": {
+    "macOS": {
+      "signingIdentity": "-",
+      "files": {
+        "Helpers/LLRemote Service.app": "target/macos-sharing/LLRemote Service.app"
+      }
+    }
+  }
+}

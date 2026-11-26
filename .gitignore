@@ -1,0 +1,66 @@
+# ===== OS generated =====
+.DS_Store
+.localized
+Thumbs.db
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ===== IDE =====
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ===== Node.js / Frontend =====
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# ===== Logs =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== Rust / Cargo =====
+target/
+
+# ===== Tauri =====
+/src-tauri/gen/schemas/
+
+# ===== Secrets =====
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.mobileprovision
+
+# ===== Coverage =====
+coverage/
+*.lcov
+
+# ===== Local brainstorming previews =====
+.superpowers/
+.pnpm-store/
+.playwright-mcp/
+.ssh
+
+# ===== Local documentation and AI entry =====
+/docs/local/
+/AGENTS.md
+/AI_CONTEXT.md
+/AI_INDEX.md
+/PROJECT_STRUCTURE.md
+/CONTEXT.md
+/mutagen.yml
+/mutagen.yml.lock
+
+/history/

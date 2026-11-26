@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "LL Remote",
+  "version": "1.0.0",
+  "identifier": "com.iLynnYi.LLRemote",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "LL Remote",
+        "width": 1280,
+        "height": 768,
+        "resizable": true,
+        "maximizable": true,
+        "preventOverflow": true,
+        "center": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'none'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "font-src": "'self'",
+        "connect-src": "'self' ipc: http://ipc.localhost ws://127.0.0.1:*",
+        "base-uri": "'none'",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "form-action": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'none'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "font-src": "'self'",
+        "connect-src": "'self' ipc: http://ipc.localhost ws:",
+        "base-uri": "'none'",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "form-action": "'none'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "shortDescription": "内网远程连接与协助",
+    "publisher": "iLynnYi",
+    "macOS": {
+      "minimumSystemVersion": "15.0"
+    },
+    "resources": {
+      "../LICENSE": "legal/LICENSE.txt",
+      "../licenses/THIRD-PARTY-NOTICES.txt": "legal/THIRD-PARTY-NOTICES.txt",
+      "../docs/distribution/INSTALL.md": "docs/INSTALL.md",
+      "../docs/distribution/PRIVACY.md": "docs/PRIVACY.md",
+      "../docs/distribution/RELEASE-NOTES.md": "docs/RELEASE-NOTES.md"
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

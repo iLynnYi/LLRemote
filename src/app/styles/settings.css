@@ -1,0 +1,644 @@
+.settings-workbench {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  padding: 0 0 24px;
+  font-size: 14px;
+}
+
+.settings-workbench .n-button {
+  font-weight: 500;
+}
+
+.settings-category-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: center;
+  width: min(100%, 900px);
+  min-width: 0;
+  gap: 8px;
+  padding: 4px 4px 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid #dfe4eb;
+}
+
+.settings-category-tab.n-button {
+  position: relative;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: transparent;
+  color: #667281;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.settings-category-tab .n-button__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.settings-category-tab.n-button::before {
+  display: none;
+}
+
+.settings-category-tab.n-button:hover {
+  background: #e5e9ee;
+  color: #344150;
+}
+
+.settings-category-tab.n-button:focus-visible {
+  outline: 2px solid #1f8a70;
+  outline-offset: 2px;
+}
+
+.settings-category-tab .n-button__border,
+.settings-category-tab .n-button__state-border {
+  display: none;
+}
+
+.settings-category-tab.active.n-button {
+  background: #deece6;
+  color: #146652;
+}
+
+.settings-category-tab.active::after {
+  position: absolute;
+  right: 14px;
+  bottom: 0;
+  left: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: #1f8a70;
+  content: "";
+}
+
+.settings-category-tab.active .n-button__content {
+  font-weight: 600;
+}
+
+.settings-category-icon {
+  width: 17px;
+  height: 17px;
+  color: inherit;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 14px;
+  justify-self: center;
+  width: min(100%, 900px);
+  min-width: 0;
+}
+
+.settings-group {
+  overflow: hidden;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(31, 41, 51, 0.04);
+}
+
+.settings-field,
+.settings-toggle {
+  display: grid;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  padding: 14px 20px;
+  border-top: 1px solid #edf0f4;
+}
+
+.settings-group > :first-child {
+  border-top: 0;
+}
+
+.settings-field {
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+}
+
+.settings-field > span,
+.settings-toggle strong {
+  color: #1f2933;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-toggle-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.settings-toggle > span {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-toggle small,
+.settings-field > small,
+.shortcut-field small {
+  color: #667281;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-toggle .sharing-startup-warning {
+  color: #a64224;
+}
+
+.sharing-startup-actions {
+  display: flex;
+  align-self: start;
+  align-items: center;
+  gap: 12px;
+}
+
+.sharing-startup-details {
+  padding: 12px 20px;
+  border-top: 1px solid #edf0f4;
+  color: #667281;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sharing-startup-details summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.sharing-startup-details summary:focus-visible {
+  outline: 2px solid #1f8a70;
+  outline-offset: 3px;
+}
+
+.sharing-startup-details p {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.settings-toggle .n-switch {
+  justify-self: end;
+}
+
+.settings-radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+
+.settings-select {
+  max-width: 260px;
+}
+
+.shortcut-field {
+  grid-template-columns: minmax(180px, 250px) minmax(180px, 280px) minmax(220px, 1fr);
+}
+
+.settings-shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: 1px solid #edf0f4;
+}
+
+.settings-shortcut-group > :first-child {
+  border-top: 0;
+}
+
+.settings-shortcut-name {
+  color: #1f2933;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.settings-shortcut-description {
+  display: block;
+  margin-top: 4px;
+  color: #667281;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.settings-group-heading {
+  margin: 0;
+  padding: 14px 20px;
+  color: #1f2933;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.settings-keyboard-local-key,
+.settings-keyboard-sent-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.settings-keyboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: left;
+}
+
+.settings-keyboard-table th,
+.settings-keyboard-table td {
+  padding: 8px 20px;
+  border-top: 1px solid #edf0f4;
+  font-size: 13px;
+}
+
+.settings-keyboard-table th {
+  color: #667281;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-keyboard-table .settings-shortcut-name {
+  font-size: 13px;
+}
+
+.settings-key-symbol {
+  color: #344150;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.settings-windows-key-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.settings-shortcut-group {
+  overflow: hidden;
+  display: grid;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(31, 41, 51, 0.04);
+}
+
+.settings-shortcut-keys {
+  justify-self: end;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid #d9e0e8;
+  border-radius: 6px;
+  background: #f7f9fb;
+  color: #24313f;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.settings-about-group {
+  display: grid;
+}
+
+.settings-about-hero {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 20px;
+}
+
+.settings-about-icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.settings-about-hero h2 {
+  margin: 0;
+  color: #1f2933;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.settings-about-version {
+  margin: 6px 0 0;
+  color: #52606d;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.settings-about-debug {
+  padding: 14px 20px;
+  border-top: 1px solid #edf0f4;
+}
+
+.settings-about-debug summary {
+  width: fit-content;
+  color: #52606d;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.settings-about-debug summary:focus-visible {
+  outline: 2px solid #1f8a70;
+  outline-offset: 4px;
+}
+
+.settings-about-debug[open] > .settings-about-list {
+  padding-top: 14px;
+}
+
+.settings-about-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.settings-about-list div {
+  display: grid;
+  grid-template-columns: minmax(96px, 140px) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.settings-about-list dt {
+  color: #667281;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.settings-about-list dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.settings-files-section {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px;
+  border-top: 1px solid #edf0f4;
+}
+
+.settings-files-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-files-heading-copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.settings-files-heading h3 {
+  margin: 0;
+  color: #1f2933;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.settings-files-description {
+  margin: 0;
+  color: #667281;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-files-heading > .n-button {
+  flex-shrink: 0;
+}
+
+.artifact-directory-control {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.settings-inline-field {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+
+.settings-inline-field > .n-button {
+  flex-shrink: 0;
+}
+
+.artifact-directory-select-shell {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.artifact-directory-select-shell > .settings-path-leading-icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.artifact-directory-select-shell .n-base-selection-label {
+  padding-left: 36px;
+}
+
+.settings-path-leading-icon {
+  justify-self: center;
+  width: 16px;
+  height: 16px;
+  color: #7b8794;
+}
+
+.artifact-directory-select {
+  min-width: 0;
+}
+
+.artifact-directory-empty-picker.n-button {
+  width: 100%;
+  height: 34px;
+  justify-content: flex-start;
+  color: #667281;
+}
+
+.file-access-control {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.file-access-message {
+  display: block;
+  margin: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #667281;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.file-access-message.tone-success {
+  color: #1f8a70;
+  font-weight: 600;
+}
+
+.file-access-message.tone-error {
+  color: #c2413c;
+  font-weight: 600;
+}
+
+.file-access-list {
+  display: grid;
+  gap: 8px;
+}
+
+.file-access-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #e2e8ef;
+  border-radius: 7px;
+  background: #fbfcfd;
+}
+
+.file-access-text {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.file-access-path {
+  overflow: hidden;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-access-builtin {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #edf2f7;
+  color: #64748b;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.file-access-status {
+  display: inline;
+  justify-self: end;
+  width: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.file-access-status.tone-success {
+  color: #1f8a70;
+}
+
+.file-access-status.tone-error {
+  color: #c2413c;
+}
+
+.file-access-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.settings-icon-button.n-button {
+  --n-width: 30px;
+  --n-height: 30px;
+  --n-padding: 0;
+}
+
+.file-access-empty {
+  justify-self: stretch;
+  padding: 16px 0 20px;
+}
+
+.shortcut-field small.invalid {
+  color: #c2413c;
+  font-weight: 800;
+}
+
+.settings-shortcut-input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #cfd7e2;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.settings-shortcut-input:focus {
+  border-color: #1f8a70;
+  outline: 2px solid rgba(31, 138, 112, 0.14);
+}
+
+.settings-shortcut-input.invalid {
+  border-color: #d85b52;
+  background: #fff7f6;
+  color: #8d2721;
+}
+
+.settings-shortcut-input.invalid:focus {
+  outline-color: rgba(216, 91, 82, 0.16);
+}
+
+.session-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 780px) {
+  .settings-category-tabs {
+    justify-content: flex-start;
+  }
+
+  .settings-field,
+  .shortcut-field,
+  .settings-about-list div {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+}

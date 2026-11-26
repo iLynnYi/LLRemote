@@ -1,0 +1,362 @@
+.session-detail-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 14px 12px;
+  border: 1px solid #d9dee5;
+  border-left: 3px solid #5cc8a7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.session-detail-card[data-tone="failed"] {
+  border-left-color: #cf514a;
+}
+
+.session-detail-card[data-tone="working"] {
+  border-left-color: #c68a2d;
+}
+
+.session-detail-card[data-tone="closed"] {
+  border-left-color: #9aa4b2;
+}
+
+.session-detail-header,
+.session-detail-title-row,
+.session-detail-target-row,
+.session-detail-status-row,
+.session-detail-basic-grid,
+.session-advanced-grid,
+.session-debug-raw-grid,
+.diagnostic-card-heading {
+  min-width: 0;
+}
+
+.session-detail-header {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 11px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.session-detail-title-row,
+.session-detail-target-row,
+.session-detail-status-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.session-detail-title-row,
+.session-detail-target-row {
+  justify-content: space-between;
+}
+
+.session-detail-title-row span,
+.session-detail-basic-grid span,
+.session-advanced-grid span,
+.session-debug-raw-grid span {
+  display: block;
+  color: #778293;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.session-detail-title-row strong {
+  color: #1f2933;
+  font-size: 12px;
+}
+
+.session-detail-target-row strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #17212b;
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-status-badge,
+.session-duration-badge {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.session-status-badge {
+  gap: 6px;
+  padding: 6px 9px;
+  color: #14735e;
+  background: #e9f8f4;
+}
+
+.session-status-badge::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #25a67f;
+  content: "";
+}
+
+.session-status-badge[data-state="failed"],
+.session-status-badge[data-state="authentication failed"],
+.session-status-badge[data-state="security failure"],
+.session-status-badge[data-state="disconnected unexpectedly"],
+.session-status-badge[data-tone="failed"] {
+  color: #a33a35;
+  background: #fff0ef;
+}
+
+.session-status-badge[data-state="failed"]::before,
+.session-status-badge[data-state="authentication failed"]::before,
+.session-status-badge[data-state="security failure"]::before,
+.session-status-badge[data-state="disconnected unexpectedly"]::before,
+.session-status-badge[data-tone="failed"]::before {
+  background: #cf514a;
+}
+
+.session-duration-badge {
+  padding: 6px 8px;
+  color: #56616f;
+  background: #f3f6f9;
+}
+
+.session-detail-basic-grid,
+.session-advanced-grid,
+.session-debug-raw-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.session-detail-basic-grid > div,
+.session-advanced-grid > div,
+.session-debug-raw-grid > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.session-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.session-detail-basic-grid strong,
+.session-advanced-grid strong,
+.session-debug-raw-grid strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #1f2933;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-advanced-diagnostics {
+  min-width: 0;
+  padding-top: 10px;
+  border-top: 1px solid #edf1f5;
+}
+
+.session-advanced-diagnostics summary {
+  display: flex;
+  min-width: 0;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.session-advanced-diagnostics summary::-webkit-details-marker {
+  display: none;
+}
+
+.session-advanced-diagnostics summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.session-advanced-diagnostics summary span::before {
+  color: #8b96a5;
+  content: ">";
+  font-size: 11px;
+}
+
+.session-advanced-diagnostics[open] summary span::before {
+  transform: rotate(90deg);
+}
+
+.session-advanced-diagnostics summary strong {
+  display: inline-flex;
+  overflow: hidden;
+  max-width: 55%;
+  padding: 5px 8px;
+  border-radius: 999px;
+  color: #14735e;
+  background: #e9f8f4;
+  font-size: 11px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-advanced-grid,
+.session-debug-raw-grid {
+  margin-top: 10px;
+}
+
+.session-debug-raw-grid {
+  padding-top: 10px;
+  border-top: 1px dashed #dce3ea;
+}
+
+.session-diagnostic-note {
+  margin: 10px 0 0;
+  color: #667281;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.session-permission-error {
+  color: #c2413c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.diagnostic-card-heading strong {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.session-debug-card,
+.session-artifacts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #d9dee5;
+  border-left: 3px solid #5cc8a7;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.session-artifact-directory {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.session-artifact-message {
+  min-width: 0;
+  margin: 0;
+  color: #667281;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.session-artifact-message.error {
+  color: #c2413c;
+  font-weight: 800;
+}
+
+.session-artifact-list {
+  display: grid;
+  gap: 8px;
+}
+
+.session-artifact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e2e8ef;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.session-artifact-open {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.session-artifact-open:hover strong {
+  color: #14735e;
+}
+
+.session-artifact-open:focus-visible {
+  outline: 2px solid #258f78;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.session-artifact-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.session-artifact-open strong {
+  overflow-wrap: anywhere;
+  color: #1f2933;
+  font-size: 12px;
+}
+
+.session-artifact-open small {
+  overflow: hidden;
+  color: #667281;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-artifact-file-name {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.session-artifact-empty {
+  padding: 8px 0;
+}
+
+.error {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #e7c1bd;
+  border-radius: 8px;
+  background: #f9eeee;
+  color: #c2413c;
+}
+
+.session-diagnostic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
