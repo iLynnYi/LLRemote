@@ -12,6 +12,7 @@ impl Drop for DropProbe {
 fn cancelling_a_pending_connect_drops_the_operation_without_waiting_for_its_deadline() {
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_time()
+        .start_paused(true)
         .build()
         .unwrap();
     let stop = AtomicBool::new(false);
@@ -22,15 +23,13 @@ fn cancelling_a_pending_connect_drops_the_operation_without_waiting_for_its_dead
         stop.store(true, Ordering::Release);
         std::future::pending::<io::Result<()>>().await
     };
-    let started = Instant::now();
-    let result = runtime.block_on(await_connect(
-        operation,
-        &stop,
-        started + Duration::from_millis(250),
-    ));
-    assert!(matches!(result, Err(ConnectError::Cancelled)));
-    assert!(started.elapsed() < Duration::from_millis(150));
-    assert!(dropped.load(Ordering::Acquire));
+    runtime.block_on(async {
+        let started = Instant::now();
+        let result = await_connect(operation, &stop, started + Duration::from_millis(250)).await;
+        assert!(matches!(result, Err(ConnectError::Cancelled)));
+        assert!(started.elapsed() < Duration::from_millis(150));
+        assert!(dropped.load(Ordering::Acquire));
+    });
 }
 
 #[test]

@@ -9,6 +9,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "dotenvy",
+ "embed-resource",
  "flate2",
  "hex",
  "image",

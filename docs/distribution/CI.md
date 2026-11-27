@@ -1,21 +1,21 @@
 # 自动化检查与候选包门禁
 
-`.github/workflows/pre-release.yml` 在 PR、push 或手动触发时执行。它不创建 Release、不上传产物、不配置签名凭据，也不将自动检查结果视为正式发布批准。
+`.github/workflows/pre-release.yml` 在 PR、push 或手动触发时执行，构建并验证五个目标的候选包。每个目标通过校验后，会把安装包上传到本次运行的 **Artifacts**。正式发布时另行核对签名状态和桌面验收结果。
 
 ## 检查范围
 
-1. 安全任务获取完整分支与标签历史（`fetch-depth: 0`），执行冻结安装、公开文件与历史检查、离线许可摘要检查、全部严重程度的 npm 审计，以及固定版本的 cargo-audit。`pnpm repository:check` 检查当前跟踪文件及 HEAD、本地分支、远端跟踪分支和标签可达的历史。它拒绝内部资料、生成文件、缓存和凭据文件，并扫描常见私钥与令牌格式。检查失败会阻断候选构建。Cargo 审计发现漏洞时失败，未维护、unsound 和撤回版本的警告继续显示。
-2. 候选任务覆盖五个首发目标。macOS Apple Silicon 使用 `macos-15`，Intel 使用 `macos-15-intel`。Windows x64 和 x86 使用 `windows-2022`，ARM64 使用 `windows-11-arm`。各任务安装 Node 24、pnpm 11.5.1、Rust 1.96.0，执行格式、严格 Clippy、前端和 Rust 测试，再构建 Release。
-3. 构建前清除旧的验证记录并写入当前源码的开始标记（提交、未提交状态和差异/新文件摘要）；构建或校验失败不会产生本次成功记录，构建期间源码变化也会拒绝。校验器拒绝旧/空安装包、错误 PE 架构、版本不一致或缺少预期产物。
-4. macOS 检查真实 .app 的主程序/Helper、动态库、资源摘要和 ad hoc 完整性，并验证 DMG CRC 与品牌 ZIP。Windows 检查主程序和服务 PE 架构/版本，以及唯一 `-setup.exe` 的 x86 NSIS 格式；使用 7-Zip 解包，核对包内主程序的每份副本与资源摘要，并运行解包主程序的无副作用加载握手。Windows runner 打包后必须再次执行安装器回归，缺少 NSIS 时失败，不能以跳过代替通过。选择、UAC 时机、安装行为、系统信任与卸载仍须真实安装验收。
+1. macOS Apple Silicon 使用 `macos-15`，Intel 使用 `macos-15-intel`。Windows x64 和 x86 使用 `windows-2022`，ARM64 使用 `windows-11-arm`。各任务使用 Node 24、pnpm 11.5.1 和 Rust 1.96.0，按锁文件安装依赖。打包命令执行许可证清单检查、前端类型检查和构建，以及 Rust Release 编译。
+2. 构建前清除旧的验证记录并写入当前源码的开始标记（提交、未提交状态和差异/新文件摘要）。校验要求源码保持一致，安装包是本次生成的非空文件，且版本和架构符合目标。
+3. macOS 检查 `.app` 的主程序、Helper、动态库、资源摘要和 ad hoc 签名完整性，并验证 DMG CRC 和品牌 ZIP。Windows 打包后执行 NSIS 安装器回归，核对主程序和服务程序的版本与架构，用 7-Zip 解包核对包内文件，并运行主程序的加载握手。选择、UAC 时机、安装行为、系统信任与卸载仍须真实安装验收。
+4. 各目标通过校验后分别上传安装包。macOS 上传 `.dmg` 和 `.dmg.zip`，Windows 上传 `-setup.exe`。Artifact 名称包含目标和运行尝试编号。
 
 两端分别在 `src-tauri/target/<target>/release/` 写入 `candidate-verification.json` 和 `SHA256SUMS`。校验和路径相对源码仓库根目录。记录固定包含 `signing: not-verified`、`desktopAcceptance: pending` 和 `published: false`；绿色工作流仅代表这些自动门禁通过。
 
-所有第三方 Actions 固定至已核对的完整提交；仓库权限仅为 `contents: read`，checkout 不保留凭据。未设置忽略错误、失败后继续发布或独立于前置检查的上传步骤。没有把编译产物放入远端缓存。
+打包工作流的权限为 `contents: read`。各 Action 固定至已核对的完整提交。
 
 ## 本地复核
 
-在完整的 Git 工作区内，使用工作流声明的 Node、pnpm 和 Rust 版本运行以下检查。在线安全审计需要访问公开漏洞库。
+仓库扫描、依赖漏洞审计、格式、Clippy 和完整测试可在本地补跑。使用工作流声明的 Node、pnpm 和 Rust 版本。在线安全审计需要访问公开漏洞库。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -29,7 +29,7 @@ pnpm test:ci
 cargo test --manifest-path src-tauri/Cargo.toml --all-targets --locked
 ```
 
-`cargo audit` 使用工作流固定的 cargo-audit 0.22.2。工作流 YAML 可用 actionlint 校验；它不实际运行 Windows/macOS runner，也不替代打包与桌面验收。
+工作流 YAML 可用 actionlint 校验，打包和桌面验收仍需在相应平台执行。
 
 准备当前平台候选包时，例如在 macOS Apple Silicon 上：
 
@@ -52,3 +52,13 @@ Windows x86 的 CI 在 x64 宿主上执行。x86 安装包要求系统原生架�
 ## 首发产物
 
 `1.0.0` 的候选构建覆盖五个目标。发布页应列出实际分发的安装包、签名状态及 SHA-256。签名、公证或重新归档后，从最终下载文件重新计算校验和。
+
+## 准备发布草稿
+
+在 **Actions → Pre-release checks** 选中默认分支上已成功的构建，从运行网址 `/actions/runs/<Run ID>` 复制末尾数字。随后到 **Actions → Prepare release draft → Run workflow**，在默认分支上填入该 Run ID。
+
+工作流从所选构建的提交读取 `src-tauri/tauri.conf.json` 的版本，将 `1.0.1` 这样的版本转成 `v1.0.1` 标签。准备下一版本时，先更新项目版本并完成一次新的打包运行。同一次运行如有重试，每个平台取该次运行里最新的有效 Artifact。
+
+五个平台的安装包会连同 `SHA256SUMS` 上传到对应版本的 Release 草稿。运行摘要会给出草稿链接。已发布的版本和其他构建的草稿会阻止创建。同一次构建的草稿如果上传中断，重新运行可继续上传缺少的附件。
+
+安装验收后，在 **Releases** 打开草稿，核对发布说明、安装包、签名状态和校验值，点击 **Publish release**。

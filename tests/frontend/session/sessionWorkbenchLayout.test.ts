@@ -474,7 +474,7 @@ test("Session toolbox exposes local Server display choices in the view menu", ()
 
 test("Session viewport target refs avoid recursive reactive updates", () => {
   const viewportGrid = sourceFile("features/sessions/components/SessionViewportGrid.vue");
-  const setTargetFunction = viewportGrid.match(/function setRemoteViewportTarget[\s\S]*?\n}\n/)?.[0] ?? "";
+  const setTargetFunction = viewportGrid.match(/function setRemoteViewportTarget[\s\S]*?\r?\n}\r?\n/)?.[0] ?? "";
 
   assert.match(setTargetFunction, /const target = element instanceof HTMLElement \? element : null/);
   assert.match(setTargetFunction, /if \(viewportTargetsBySessionId\.value\[sessionId\] === target\) \{\s*return;\s*\}/);

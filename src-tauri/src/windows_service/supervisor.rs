@@ -400,11 +400,12 @@ impl Supervisor {
                 server_id,
             } => {
                 let broker = peer.system && peer.pid == std::process::id() && peer.session_id == 0;
-                if (!broker && !self.valid_worker(&peer, Some(session_id)))
-                    || !self
+                let allowed_caller = broker || self.valid_worker(&peer, Some(session_id));
+                if !allowed_caller
+                    || self
                         .worker
                         .as_ref()
-                        .is_some_and(|worker| worker.server_id == server_id)
+                        .is_none_or(|worker| worker.server_id != server_id)
                 {
                     return Err("windows_service_access_denied".into());
                 }
@@ -1071,7 +1072,7 @@ unsafe extern "system" fn service_main(argc: u32, argv: *mut *mut u16) {
                 let _ = super::native::protect_file(&directory.join("startup-attempt.json"), true);
             }
         }
-        let mut server = ipc::Server::new().map_err(|code| {
+        let mut server = ipc::Server::new().inspect_err(|code| {
             if let Some(attempt) = &mut startup_attempt {
                 attempt.finish(Err(code.clone()));
                 if let Ok(directory) = super::native::data_directory() {
@@ -1080,7 +1081,6 @@ unsafe extern "system" fn service_main(argc: u32, argv: *mut *mut u16) {
                         super::native::protect_file(&directory.join("startup-attempt.json"), true);
                 }
             }
-            code
         })?;
         let mut supervisor = Supervisor::new();
         supervisor.startup_attempt = startup_attempt;

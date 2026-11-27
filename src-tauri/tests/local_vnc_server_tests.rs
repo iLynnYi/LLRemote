@@ -694,9 +694,9 @@ fn local_vnc_server_authenticates_and_reports_actual_capture_result() {
         .write_all(&0_u32.to_be_bytes())
         .expect("write ClientCutText caps text size");
 
-    // Capture is asynchronous and may be unavailable in a headless/unauthorized
-    // process. An unavailable capture leaves the request pending without fake pixels.
-    let capture_deadline = Instant::now() + Duration::from_secs(2);
+    // Native capture can take several seconds to deliver its first result on a
+    // shared runner. If capture is unavailable, the request must stay pending.
+    let capture_deadline = Instant::now() + Duration::from_secs(10);
     loop {
         let diagnostics = manager.status().unwrap().frame_diagnostics;
         if diagnostics.capture_status != LocalVncServerCaptureStatus::Waiting {

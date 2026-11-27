@@ -13,9 +13,8 @@ fn default_dacl(token: HANDLE) -> Vec<u8> {
 #[test]
 fn restricted_default_dacl_grants_self_process_access_without_changing_the_source_token() {
     use windows_sys::Win32::Security::{
-        AccessCheck, InitializeSecurityDescriptor, SetSecurityDescriptorDacl,
-        SetSecurityDescriptorGroup, SetSecurityDescriptorOwner, TokenImpersonation, TokenUser,
-        GENERIC_MAPPING, SECURITY_DESCRIPTOR, TOKEN_IMPERSONATE, TOKEN_USER,
+        AccessCheck, CreatePrivateObjectSecurity, DestroyPrivateObjectSecurity, TokenImpersonation,
+        GENERIC_MAPPING, TOKEN_IMPERSONATE,
     };
     use windows_sys::Win32::System::Threading::{PROCESS_ALL_ACCESS, PROCESS_DUP_HANDLE};
     let caller = native::process_token(
@@ -79,18 +78,6 @@ fn restricted_default_dacl_grants_self_process_access_without_changing_the_sourc
     );
     validate(token.0, native::current_session().unwrap()).unwrap();
 
-    let user = buffer(token.0, TokenUser, "test_user").unwrap();
-    let sid = unsafe { (*user.as_ptr().cast::<TOKEN_USER>()).User.Sid };
-    let dacl = buffer(token.0, TokenDefaultDacl, "test_default_dacl").unwrap();
-    let acl = unsafe { (*dacl.as_ptr().cast::<TOKEN_DEFAULT_DACL>()).DefaultDacl };
-    let mut descriptor = SECURITY_DESCRIPTOR::default();
-    let descriptor = (&mut descriptor as *mut SECURITY_DESCRIPTOR).cast();
-    unsafe {
-        assert_ne!(InitializeSecurityDescriptor(descriptor, 1), 0);
-        assert_ne!(SetSecurityDescriptorOwner(descriptor, sid, 0), 0);
-        assert_ne!(SetSecurityDescriptorGroup(descriptor, sid, 0), 0);
-        assert_ne!(SetSecurityDescriptorDacl(descriptor, 1, acl, 0), 0);
-    }
     let mut impersonation = null_mut();
     assert_ne!(
         unsafe {
@@ -106,60 +93,63 @@ fn restricted_default_dacl_grants_self_process_access_without_changing_the_sourc
         0
     );
     let impersonation = Handle::new(impersonation, "test_impersonation").unwrap();
-    // The descriptor uses GA, so GenericAll maps it to process rights. Check the
-    // effective grant with the actual restricted token, not just ACL text.
-    let mut mapping = GENERIC_MAPPING {
+    // Materialize object security before AccessCheck. Object creation supplies
+    // the owner/group and maps GA in the ACL template to process rights.
+    let mapping = GENERIC_MAPPING {
         GenericRead: 0,
         GenericWrite: 0,
         GenericExecute: 0,
         GenericAll: PROCESS_ALL_ACCESS,
     };
-    let mut privileges = [0usize; 128];
-    let mut privileges_size = size_of_val(&privileges) as u32;
-    let mut granted = 0;
-    let mut allowed = 0;
-    assert_ne!(
-        unsafe {
+    let explicit = object_security(token.0).unwrap();
+    for (creator, kind) in [
+        (null_mut(), "token default DACL"),
+        (explicit.attributes().lpSecurityDescriptor, "explicit DACL"),
+    ] {
+        let mut descriptor = null_mut();
+        assert_ne!(
+            unsafe {
+                CreatePrivateObjectSecurity(
+                    null_mut(),
+                    creator,
+                    &mut descriptor,
+                    0,
+                    token.0,
+                    &mapping,
+                )
+            },
+            0,
+            "create object security from {kind}: {}",
+            native::last_error()
+        );
+        let mut privileges = [0usize; 128];
+        let mut privileges_size = size_of_val(&privileges) as u32;
+        let mut granted = 0;
+        let mut allowed = 0;
+        let checked = unsafe {
             AccessCheck(
                 descriptor,
                 impersonation.0,
                 PROCESS_DUP_HANDLE,
-                &mut mapping,
+                &mapping,
                 privileges.as_mut_ptr().cast(),
                 &mut privileges_size,
                 &mut granted,
                 &mut allowed,
             )
-        },
-        0
-    );
-    assert_ne!(
-        allowed, 0,
-        "a restricted child must be able to reopen itself for socket duplication"
-    );
-    assert_eq!(granted & PROCESS_DUP_HANDLE, PROCESS_DUP_HANDLE);
-    let object_security = object_security(token.0).unwrap();
-    privileges_size = size_of_val(&privileges) as u32;
-    allowed = 0;
-    assert_ne!(
-        unsafe {
-            AccessCheck(
-                object_security.attributes().lpSecurityDescriptor,
-                impersonation.0,
-                PROCESS_DUP_HANDLE,
-                &mut mapping,
-                privileges.as_mut_ptr().cast(),
-                &mut privileges_size,
-                &mut granted,
-                &mut allowed,
-            )
-        },
-        0
-    );
-    assert_ne!(
-        allowed, 0,
-        "explicit process/thread security must grant the ordinary user access too"
-    );
+        };
+        let check_error = native::last_error();
+        assert_ne!(
+            unsafe { DestroyPrivateObjectSecurity(&raw mut descriptor) },
+            0
+        );
+        assert_ne!(checked, 0, "AccessCheck for {kind}: {check_error}");
+        assert_ne!(
+            allowed, 0,
+            "{kind} must let the restricted child reopen itself"
+        );
+        assert_eq!(granted & PROCESS_DUP_HANDLE, PROCESS_DUP_HANDLE);
+    }
 }
 
 #[test]

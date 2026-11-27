@@ -211,11 +211,11 @@ test("NSIS hook includes resolve from the hook directory after a complete source
     t.skip("NSIS compiler is not installed"); return;
   }
   const root = await realpath(await mkdtemp(join(tmpdir(), "LL Remote 中文 NSIS source-")));
-  const nsisPath = (value: string) => value.replaceAll("\\", "/").replaceAll("$", "$$");
+  const nsisPath = (value: string) => value.replaceAll("$", "$$");
   try {
     const source = fileURLToPath(new URL("../../../src-tauri/windows/", import.meta.url));
     await copyFile(join(source, "service-hooks.nsh"), join(root, "service-hooks.nsh"));
-    await writeFile(join(root, "installer.nsi"), `
+    await writeFile(join(root, "installer.nsi"), `\uFEFF
 Unicode true
 !include "${nsisPath(join(root, "service-hooks.nsh"))}"
 Name "NSIS include regression"

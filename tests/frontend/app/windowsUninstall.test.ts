@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmod, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -555,6 +555,7 @@ Section
     WriteINIStr $3 "uninstall" "user" "Alice"
     WriteINIStr $3 "uninstall" "elevate" "0"
     WriteINIStr $3 "uninstall" "service" "0"
+    SetErrorLevel 0
     Quit
   \${EndIf}
   \${GetOptions} $CMDLINE "--prepare-uninstall" $3
@@ -620,10 +621,36 @@ UninstPage custom un.ConfirmShow un.ConfirmLeave
 ${labels}
 ${callbacks.join("\n")}
 Section
+  \${GetOptions} $CMDLINE "/UNINSTALL" $0
+  \${IfNot} \${Errors}
+    StrCpy $0 -1
+    \${GetOptions} $CMDLINE "/LOCK-RESOURCE" $2
+    \${IfNot} \${Errors}
+      ; Open with FILE_SHARE_READ | FILE_SHARE_WRITE, excluding FILE_SHARE_DELETE.
+      System::Call 'kernel32::CreateFileW(w "$INSTDIR\\resource.txt", i 0x80000000, i3, p0, i3, i0x80, p0) p.r0'
+      \${If} $0 == -1
+        SetErrorLevel 91
+        Quit
+      \${EndIf}
+    \${EndIf}
+    ClearErrors
+    ; _?= keeps NSIS in this process so ExecWait gets its actual exit code.
+    ExecWait '"$EXEDIR\\run-uninstall.exe" /S _?=$INSTDIR' $1
+    \${If} \${Errors}
+      StrCpy $1 92
+    \${EndIf}
+    \${If} $0 != -1
+      System::Call 'kernel32::CloseHandle(p r0)'
+    \${EndIf}
+    SetErrorLevel $1
+    Quit
+  \${EndIf}
+  ClearErrors
   SetOutPath "$INSTDIR"
   File /oname=LLRemote.exe "${path(join(root, "helper.exe"))}"
   File /oname=resource.txt "${path(join(root, "resource.txt"))}"
   WriteUninstaller "$INSTDIR\\uninstall.exe"
+  WriteUninstaller "$EXEDIR\\run-uninstall.exe"
 SectionEnd
 ${section}
 Function un.onUninstSuccess
@@ -636,45 +663,36 @@ Function un.onUninstSuccess
   FileWrite $0 "success"
   FileClose $0
 FunctionEnd
-Function un.onUninstFailed
-  FileOpen $0 "${path(join(root, "result.txt"))}" w
-  FileWrite $0 "failed"
-  FileClose $0
-FunctionEnd
 `);
     if (!windows) {
       t.diagnostic("Compiled the real ownership initialization, confirmation page, scoped hooks and complete removal section; execution requires Windows.");
       return;
     }
-    for (const scenario of ["cleanup-failed", "resource-readonly", "data-residue", "success", "missing-app"]) {
+    for (const scenario of ["cleanup-failed", "resource-in-use", "data-residue", "success", "missing-app"]) {
       await rm(installed, { recursive: true, force: true });
       await rm(join(root, "result.txt"), { force: true });
       const seed = spawnSync(join(root, "seed.exe"), ["/S"], { timeout: 30_000 });
       assert.equal(seed.status, 0);
       if (scenario === "cleanup-failed") await writeFile(join(installed, "fail.txt"), "fixture");
       if (scenario === "data-residue") await writeFile(join(installed, "residue.txt"), "fixture");
-      if (scenario === "resource-readonly") await chmod(join(installed, "resource.txt"), 0o444);
       if (scenario === "missing-app") {
         await rm(join(installed, "LLRemote.exe"));
         await rm(join(installed, "resource.txt"));
       }
-      const result = spawnSync(join(installed, "uninstall.exe"), ["/S"], { timeout: 30_000 });
-      assert.equal(result.error, undefined);
-      let output = "";
-      const deadline = Date.now() + 30_000;
-      while (Date.now() < deadline) {
-        try { output = await readFile(join(root, "result.txt"), "utf8"); break; }
-        catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      }
+      const args = ["/S", "/UNINSTALL"];
+      if (scenario === "resource-in-use") args.push("/LOCK-RESOURCE");
+      const result = spawnSync(join(root, "seed.exe"), args, { timeout: 30_000 });
+      assert.ifError(result.error);
       const completed = scenario === "success" || scenario === "data-residue" || scenario === "missing-app";
-      assert.equal(output, completed ? "success" : "failed");
-      const calls = await readFile(join(installed, "calls.txt"), "utf8");
-      assert.match(calls, /--prepare-uninstall --target-user S-1-5-21-1-2-3-1001/);
+      const calls = await readFile(join(installed, "calls.txt"), "utf8").catch(error => {
+        if (error.code !== "ENOENT") throw error;
+        return "";
+      });
+      assert.equal(result.status, completed ? 0 : 1, `${scenario}: ${calls}`);
+      assert.match(calls, /--prepare-uninstall --target-user S-1-5-21-1-2-3-1001/, scenario);
       assert.ok(calls.includes(`--uninstall-directory "${installed}"`));
       if (completed) {
+        assert.equal(await readFile(join(root, "result.txt"), "utf8"), "success", scenario);
         assert.match(calls, /--finish-uninstall --target-user S-1-5-21-1-2-3-1001/);
         await assert.rejects(readFile(join(installed, "LLRemote.exe")), { code: "ENOENT" });
         if (scenario === "data-residue") {
@@ -683,6 +701,7 @@ FunctionEnd
         }
       } else {
         assert.doesNotMatch(calls, /--finish-uninstall/);
+        assert.ok(await readFile(join(installed, "resource.txt")));
         assert.ok(await readFile(join(installed, "LLRemote.exe")));
         assert.ok(await readFile(join(installed, "uninstall.exe")));
       }
@@ -718,14 +737,17 @@ Unicode true
 !include LogicLib.nsh
 !include FileFunc.nsh
 Name "Completion receipt fixture"
-OutFile "${path(join(root, "child.exe"))}"
+OutFile "${path(join(root, "child-seed.exe"))}"
 RequestExecutionLevel user
 SilentInstall silent
+SilentUninstall silent
 Var UninstallResultFile
-${receipt.replace("Function un.RecordCompletion", "Function RecordCompletion")}
+${receipt}
 Section
+  WriteUninstaller "$EXEDIR\\child.exe"
+SectionEnd
+Section Uninstall
   \${GetOptions} $CMDLINE "/RESULTFILE=" $UninstallResultFile
-  StrCpy $INSTDIR "${path(installed)}"
   Delete "$INSTDIR\\LLRemote.exe"
   \${GetOptions} $CMDLINE "/CASE=" $4
   \${If} $4 == "failed-after-main"
@@ -735,7 +757,7 @@ Section
   \${If} $4 == "restart-required"
     SetRebootFlag true
   \${EndIf}
-  Call RecordCompletion
+  Call un.RecordCompletion
 SectionEnd
 `);
     await compile("parent.nsi", `
@@ -762,11 +784,14 @@ SectionEnd
       t.diagnostic("Compiled the production elevated-parent result check and atomic completion receipt; execution requires Windows.");
       return;
     }
+    const seed = spawnSync(join(root, "child-seed.exe"), ["/S"], { timeout: 30_000 });
+    assert.ifError(seed.error);
+    assert.equal(seed.status, 0);
     for (const scenario of ["success", "failed-after-main", "restart-required"]) {
       await writeFile(join(installed, "LLRemote.exe"), "fixture");
       const result = spawnSync(join(root, "parent.exe"), ["/S", `/CASE=${scenario}`], { timeout: 30_000 });
       assert.equal(result.error, undefined);
-      assert.equal(result.status, scenario === "success" ? 0 : scenario === "restart-required" ? 3010 : 1);
+      assert.equal(result.status, scenario === "success" ? 0 : scenario === "restart-required" ? 3010 : 1, scenario);
       await assert.rejects(readFile(join(installed, "LLRemote.exe")), { code: "ENOENT" });
     }
   } finally {

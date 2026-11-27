@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { tmpdir } from "node:os";
 
 const windowsOnly = { skip: process.platform !== "win32" };
@@ -16,12 +16,18 @@ function runFixture(checks: string, commands: Record<string, string>) {
     writeFileSync(join(directory, `${name}.cmd`), `@echo off\r\n${body}\r\n`);
   }
   const source = `$ProgressPreference='SilentlyContinue'; $global:LASTEXITCODE=0; & '${runner.replaceAll("'", "''")}' -Checks '${checks}'; exit $LASTEXITCODE`;
+  const systemRoot = process.env.SystemRoot ?? "C:\\Windows";
+  const systemDirectory = join(systemRoot, "System32");
+  const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => name.toLowerCase() !== "path"));
+  // Keep system commands available without finding the runner's real cargo or pnpm.
+  env.Path = [directory, systemDirectory, systemRoot].join(delimiter);
   try {
-    const result = spawnSync(join(process.env.SystemRoot ?? "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe"), [
+    const result = spawnSync(join(systemDirectory, "WindowsPowerShell", "v1.0", "powershell.exe"), [
       "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", Buffer.from(source, "utf16le").toString("base64"),
-    ], { encoding: "utf8", env: { ...process.env, PATH: directory }, timeout: 15000 });
+    ], { encoding: "utf8", env, timeout: 60_000 });
+    assert.ifError(result.error);
     const line = result.stdout.split(/\r?\n/).find((line) => line.startsWith("VNC_WINDOWS_RESULT="));
-    assert.ok(line, result.stderr);
+    assert.ok(line, `PowerShell exited ${result.status}:\n${result.stdout}\n${result.stderr}`);
     return { stderr: result.stderr, code: result.status, result: JSON.parse(line.slice("VNC_WINDOWS_RESULT=".length)) };
   } finally { rmSync(directory, { recursive: true, force: true }); }
 }

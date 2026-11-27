@@ -2,7 +2,8 @@ use std::future::Future;
 use std::io;
 use std::net::{SocketAddr, TcpStream};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::{Duration, Instant};
+use std::time::Duration;
+use tokio::time::Instant;
 
 const CONNECT_POLL: Duration = Duration::from_millis(50);
 

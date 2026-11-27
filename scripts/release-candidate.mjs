@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { verifyMacosBundle } from "./verify-macos-bundle.mjs";
 import { installNames, webview2RuntimeName } from "./windows-installers.mjs";
@@ -71,15 +71,12 @@ export function verifyWindowsPayload(directory, expected) {
       if (entry.isSymbolicLink()) throw new Error("candidate_payload_symlink");
       if (entry.isDirectory()) visit(absolute);
       else if (entry.isFile()) {
-        const normalized = relative(directory, absolute).replaceAll("\\", "/");
-        // NSIS extracts named $PLUGINSDIR/$INSTDIR roots with 7-Zip. Require
-        // matching path suffixes AND content for every copy of an expected file.
-        for (const [name, sha256] of expected) {
-          if (normalized === name || normalized.endsWith(`/${name}`)) {
-            if (digest(absolute) !== sha256) throw new Error(`candidate_payload_mismatch: ${name}`);
-            found.set(name, absolute);
-          }
-        }
+        const path = relative(directory, absolute).replaceAll(sep, "/");
+        // 7-Zip also lists NSIS rollback markers created by FileOpen.
+        // Only complete paths identify the files embedded by File instructions.
+        if (!expected.has(path)) continue;
+        if (digest(absolute) !== expected.get(path)) throw new Error(`candidate_payload_mismatch: ${path}`);
+        found.set(path, absolute);
       }
     }
   };
@@ -90,19 +87,25 @@ export function verifyWindowsPayload(directory, expected) {
   return found;
 }
 
-function verifyWindowsInstaller(installer, main, resources) {
+function verifyWindowsInstaller(installer, main, resources, webview2) {
   const directory = mkdtempSync(join(tmpdir(), "LLRemote-payload-"));
   try {
     // GitHub's Windows image includes 7-Zip. Local candidate verification also
     // requires it; do not downgrade this gate to a filename-only check.
     const sevenZip = existsSync("C:/Program Files/7-Zip/7z.exe") ? "C:/Program Files/7-Zip/7z.exe" : "7z.exe";
     execFileSync(sevenZip, ["x", "-y", `-o${directory}`, installer], { stdio: "pipe", timeout: 60_000 });
-    const expected = new Map([["LLRemote.exe", nsisMainDigest(main)], ...resources.map(([name, source]) => [name, digest(source)])]);
+    const payloadRoot = "$PLUGINSDIR/payload";
+    const mainPath = `${payloadRoot}/LLRemote.exe`;
+    const expected = new Map([
+      [mainPath, nsisMainDigest(main)],
+      ...resources.map(([name, source]) => [`${payloadRoot}/${name}`, digest(source)]),
+      [`$PLUGINSDIR/${webview2RuntimeName}`, digest(webview2)],
+    ]);
     const extracted = verifyWindowsPayload(directory, expected);
     // Loading the actual packaged main is side-effect free; installer checks
     // SCM/configuration separately after its scope/UAC choice.
     const report = join(directory, "loader-check.ini");
-    execFileSync(extracted.get("LLRemote.exe"), ["--installer-check", "--installer-report", report], { timeout: 15_000, stdio: "pipe" });
+    execFileSync(extracted.get(mainPath), ["--installer-check", "--installer-report", report], { timeout: 15_000, stdio: "pipe" });
     const handshake = readFileSync(report, "utf8");
     if (!/(?:^|\r?\n)protocol=1(?:\r?\n|$)/.test(handshake) || !/(?:^|\r?\n)result=0(?:\r?\n|$)/.test(handshake)) throw new Error("candidate_loader_handshake_invalid");
   } finally { rmSync(directory, { recursive: true, force: true }); }
@@ -181,7 +184,7 @@ function verify(target, mirror) {
       const resources = Object.entries(base.bundle.resources ?? {}).map(
         ([source, destination]) => [destination.replaceAll("\\", "/"), resolve(root, "src-tauri", source)],
       );
-      verifyWindowsInstaller(installer, binaries[0], [...resources, ["LLRemoteService.exe", binaries[1]], [webview2RuntimeName, webview2]]);
+      verifyWindowsInstaller(installer, binaries[0], [...resources, ["LLRemoteService.exe", binaries[1]]], webview2);
       artifacts.push(installer);
     }
     metadata = { version: config.version, architectures: [target], binaryVersions: versions, installerRuntime: "x86", installChoices: ["currentUser", "perMachine"], installerContents: "payload-hashes-verified", loaderCheck: "passed" };

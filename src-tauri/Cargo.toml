@@ -23,6 +23,7 @@ name = "LLRemoteService"
 path = "src/bin/LLRemoteService.rs"
 
 [build-dependencies]
+embed-resource = "3.0.9"
 tauri-build = { version = "2", features = [] }
 
 [profile.dev]
@@ -69,6 +70,7 @@ tauri-plugin-single-instance = "2.5.5"
 
 [dev-dependencies]
 tauri = { version = "2", features = ["test"] }
+tokio = { version = "1.53.3", features = ["test-util"] }
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "=0.39.1"

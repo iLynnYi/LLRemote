@@ -62,6 +62,12 @@ impl Drop for GdiObject {
     }
 }
 
+struct ReferenceBounds {
+    refreshed_at: Instant,
+    reference: Option<(i32, i32)>,
+    work_area: RECT,
+}
+
 struct WindowData {
     history: RefCell<MessageHistory>,
     inbox: Arc<Mutex<MessageInbox>>,
@@ -72,7 +78,7 @@ struct WindowData {
     card_rect: Cell<RECT>,
     measured_height: Cell<i32>,
     client_width: Cell<i32>,
-    reference_bounds: RefCell<Option<(Instant, Option<(i32, i32)>, RECT)>>,
+    reference_bounds: RefCell<Option<ReferenceBounds>>,
     scale: f64,
     font: GdiObject,
     title_font: GdiObject,
@@ -923,13 +929,17 @@ unsafe fn resize_to_contents(hwnd: HWND, data: &WindowData, center: bool) {
         let mut cached = data.reference_bounds.borrow_mut();
         if cached
             .as_ref()
-            .is_none_or(|(time, _, _)| time.elapsed() > Duration::from_secs(1))
+            .is_none_or(|bounds| bounds.refreshed_at.elapsed() > Duration::from_secs(1))
         {
-            let (reference, work) = main_window_and_work_area(hwnd);
-            *cached = Some((Instant::now(), reference, work));
+            let (reference, work_area) = main_window_and_work_area(hwnd);
+            *cached = Some(ReferenceBounds {
+                refreshed_at: Instant::now(),
+                reference,
+                work_area,
+            });
         }
-        let (_, reference, work) = cached.as_ref().unwrap();
-        (*reference, *work)
+        let bounds = cached.as_ref().unwrap();
+        (bounds.reference, bounds.work_area)
     };
     let limits = popup_limits(
         reference,

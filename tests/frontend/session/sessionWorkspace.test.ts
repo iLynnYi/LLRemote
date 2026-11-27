@@ -762,7 +762,7 @@ test("Session viewport is focusable so main-window keyboard input reaches the en
 
 test("Session viewport claims main-window input before forwarding the first pointer down", () => {
   const sessionViewport = sourceFile("../../../src/features/sessions/components/SessionViewportGrid.vue");
-  const forwardMainPointer = sessionViewport.match(/async function forwardMainPointer[\s\S]*?\n}\n\nfunction forwardMainWheel/)?.[0] ?? "";
+  const forwardMainPointer = sessionViewport.match(/async function forwardMainPointer[\s\S]*?\r?\n}\r?\n\r?\nfunction forwardMainWheel/)?.[0] ?? "";
 
   assert.match(forwardMainPointer, /void activateSessionTab\(tabId\)/);
   assert.doesNotMatch(forwardMainPointer, /await activateSessionTab\(tabId\)/);
@@ -838,7 +838,7 @@ test("Session viewport does not forward main-window pointer or wheel input while
 
 test("Session keyboard diagnostics only records input after capture passes read-only checks", () => {
   const appState = sourceFile("../../../src/app/composables/useVncAppState.ts");
-  const keyboardHandler = appState.match(/function handleSessionViewportKeyboardEvent[\s\S]*?\n  }\n\n  const openGlobalTransferDrawer/)?.[0] ?? "";
+  const keyboardHandler = appState.match(/function handleSessionViewportKeyboardEvent[\s\S]*?\r?\n  }\r?\n\r?\n  const openGlobalTransferDrawer/)?.[0] ?? "";
 
   assert.match(keyboardHandler, /readonly: Boolean\(sessionReadonlyBySessionId\.value\[sessionId\]\)/);
   assert.match(keyboardHandler, /if \(!shouldCapture\) \{[\s\S]*?return;[\s\S]*?\}/);

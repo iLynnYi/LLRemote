@@ -3,8 +3,8 @@
   "inputs": {
     "package.json": "1979b5d350fbb8aeb1e18b44669c7ebcea7efd548e69849217e25233d89b0471",
     "pnpm-lock.yaml": "a5f93c17471f1b743a14cc4b17a7618ed85d526ce7c9d113fc17cfdb83004e57",
-    "src-tauri/Cargo.toml": "b84ef76252023463614a8ce8e7c35ca85956d9b34d01402460eec35ce83506e4",
-    "src-tauri/Cargo.lock": "70a338d09188006e5be34cb052030a0a70280f5a19d750bec29564f9df5d9353",
+    "src-tauri/Cargo.toml": "06c344b7cbea862abb671f3785107f5b544127e87aee80bc165a558e32961579",
+    "src-tauri/Cargo.lock": "94bc846e752fcff4eecf2488cedaae0a4405f3e89e73aaf5acb224a0d445774d",
     "licenses/overrides.json": "f7723c07ed053c54773d1d67a0e44ea8db031b2c346ae96827d43ab7d909a266"
   },
   "targets": [
